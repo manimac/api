@@ -31,16 +31,19 @@ mongoose
 var Users = require('./modules/AccountSettings/accountSettingsController');
 var Category = require('./modules/Categories/categoriesController');
 var SubCategory = require('./modules/SubCategories/subCategoriesController');
+var Application = require('./modules/Application/applicationController');
+var Events = require('./modules/Events/eventsController');
 
 
 app.use('/user', Users)
-app.use('/api/category', Category)
 app.use('/category', Category)
 app.use('/sub-category', SubCategory)
+app.use('/application', Application)
+app.use('/events', Events)
 app.use('/', (req, res) => {
   res.writeHead(200, {'Content-Type': 'text/html'});
   //Return the url part of the request object:
-  res.write('Application Connected ');
+  res.write('Application Connected');
   res.end();
 });
 

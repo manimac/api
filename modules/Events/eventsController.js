@@ -4,8 +4,7 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken')
 var path = require('path')
 const multer = require('multer')
-const SubCategory = require('./subCategoriesModel')
-const { response } = require('express')
+const Events = require('./eventsModel')
 router.use(cors())
 
 const storage = multer.diskStorage({
@@ -24,25 +23,18 @@ router.post('/create', upload.single('file'), (req, res) => {
   try{
     const file = req.file;
     const data = {
-      parent_category: req.body.parent_category,
-      name_english: req.body.name_english,
-      name_arabic: req.body.name_arabic,
-      icon: file.filename,
-      color: req.body.color,
-      business: req.body.business,
-      individual: req.body.individual,
-      sequence: req.body.sequence,
-      active: false
+      file_upload: file.filename,
+      comments: req.body.comments
     }
 
     // check if category is existing then update data else create new one.
     if(req.body.id){
-      SubCategory.findOne({
+      Events.findOne({
         _id: ObjectID(req.body.id)
       })
       .then(response => {
         if (response) {
-          SubCategory.updateOne(data)
+          Events.updateOne(data)
             .then(response1 => {
               res.status(200).json({ response: response1, message: "updated" })
             })
@@ -74,7 +66,7 @@ router.post('/create', upload.single('file'), (req, res) => {
       })
     }
     else{
-      SubCategory.create(data)
+      Events.create(data)
       .then(response => {
         res.status(200).json({ response: response })
       })
@@ -91,7 +83,6 @@ router.post('/create', upload.single('file'), (req, res) => {
         });
       })
     }
-
   }
   catch (err) {
     var message = '';
@@ -110,12 +101,12 @@ router.post('/create', upload.single('file'), (req, res) => {
 
 router.get('/get', (req, res) => {
   try{
-    SubCategory.find({})
+    Events.find({})
     .then(response => {
       if (response) {
-        res.status(200).json(response)
+        res.status(200).json(response);
       } else {
-        res.send('Sub Category not found')
+        res.send('Category not found')
       }
     })
     .catch(err => {
@@ -130,7 +121,7 @@ router.get('/get', (req, res) => {
         message: message
       });
     })
-  }
+  }  
   catch (err) {
     var message = '';
     if (err.message) {
@@ -147,15 +138,14 @@ router.get('/get', (req, res) => {
 
 router.get('/view', (req, res) => {
   try{
-    //var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
-    SubCategory.findOne({
+    Events.findOne({
       _id: ObjectID(req.body.id)
     })
     .then(response => {
       if (response) {
         res.status(200).json(response)
       } else {
-        res.send('Sub Category does not exist')
+        res.send('Category does not exist')
       }
     })
     .catch(err => {
@@ -183,12 +173,12 @@ router.get('/view', (req, res) => {
       message: message
     });
   }
-
 })
+
 
 router.delete('/delete', (req, res) => {
   try{
-    SubCategory.deleteOne({
+    Events.deleteOne({
       _id: ObjectID(req.body.id)
     })
     .then(user => {
@@ -221,6 +211,5 @@ router.delete('/delete', (req, res) => {
   }
 
 })
-
 
 module.exports = router

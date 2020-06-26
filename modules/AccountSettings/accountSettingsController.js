@@ -51,7 +51,7 @@ router.post('/register', (req, res) => {
                 let token = jwt.sign(payload, process.env.SECRET_KEY, {
                   expiresIn: 1440
                 })
-                res.json({ token: token, message: "Registered Successfully" })
+                res.status(200).json({ token: token, message: "Registered Successfully" })
               })
               .catch(err => {
                 var message = '';
@@ -75,7 +75,7 @@ router.post('/register', (req, res) => {
             message = err.message;
           }
           else {
-            message = err; 
+            message = err;
           }
           return res.status(400).send({
             message: message
@@ -100,152 +100,282 @@ router.post('/register', (req, res) => {
 })
 
 router.post('/login', (req, res) => {
-
-  if (validator.validate(req.body.username)) {
-    User.findOne({
-      //email: req.body.email
-      email: req.body.username
-    })
-      .then(user => {
-        if (user) {
-          if (bcrypt.compareSync(req.body.password, user.password)) {
-            const payload = {
-              _id: user._id,
-              mobile: user.mobile,
-              email: user.email
-            }
-            let token = jwt.sign(payload, process.env.SECRET_KEY, {
-              expiresIn: 1440
-            })
-            res.json({ token: token, email: user.email })
-          }
-          else {
-            res.json({ error: 'Invalid Password' })
-          }
-        } else {
-          res.json({ error: 'Invalid user' })
-        }
+  try{
+    if (validator.validate(req.body.username)) {
+      User.findOne({
+        //email: req.body.email
+        email: req.body.username
       })
-      .catch(err => {
-        res.send('error: ' + err)
-      })
-  }
-  else {
-    User.findOne({
-      mobile: req.body.username
-    })
-      .then(user => {
-        if (user) {
-          if (bcrypt.compareSync(req.body.password, user.password)) {
-            const payload = {
-              _id: user._id,
-              mobile: user.mobile,
-              email: user.email
-            }
-            let token = jwt.sign(payload, process.env.SECRET_KEY, {
-              expiresIn: 1440
-            })
-            res.json({ token: token })
-          }
-          else {
-            res.json({ error: 'InCorrect Password' })
-          }
-        } else {
-          res.json({ error: 'Invalid user' })
-        }
-      })
-      .catch(err => {
-        res.send('error: ' + err)
-      })
-  }
-
-
-})
-
-router.get('/profile', (req, res) => {
-  var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
-  User.findOne({
-    _id: decoded._id
-  })
-    .then(user => {
-      if (user) {
-        res.json(user)
-      } else {
-        res.send('User does not exist')
-      }
-    })
-    .catch(err => {
-      res.send('error: ' + err)
-    })
-})
-
-router.get('/allUserData', (req, res) => {
-  User.find({})
-    .then(user => {
-      if (user) {
-        res.json(user)
-      } else {
-        res.send('No userData')
-      }
-    })
-    .catch(err => {
-      res.send('error: ' + err)
-    })
-})
-
-
-router.put('/updateProfile', (req, res) => {
-  var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
-  let hash = bcrypt.hashSync(req.body.password, 10);
-  const userData = {
-    mobile: req.body.mobile,
-    email: req.body.email,
-    password: hash
-  }
-  if (req.body.password == req.body.confirmPassword) {
-    User.findOne({
-      _id: decoded._id
-    })
-      //TODO bcrypt
-      .then(user => {
-        if (user) {
-          User.updateOne(userData)
-            .then(user => {
+        .then(user => {
+          if (user) {
+            if (bcrypt.compareSync(req.body.password, user.password)) {
               const payload = {
                 _id: user._id,
                 mobile: user.mobile,
                 email: user.email
               }
-              res.json({ token: payload, message: "updated" })
-            })
-            .catch(err => {
-              res.send('error: ' + err)
-            })
-        } else {
-          res.json({ error: 'User not exists' })
-        }
+              let token = jwt.sign(payload, process.env.SECRET_KEY, {
+                expiresIn: 1440
+              })
+              res.status(200).json({ token: token, email: user.email })
+            }
+            else {
+              res.json({ error: 'Invalid Password' })
+            }
+          } else {
+            res.json({ error: 'Invalid user' })
+          }
+        })
+        .catch(err => {
+          var message = '';
+          if (err.message) {
+            message = err.message;
+          }
+          else {
+            message = err;
+          }
+          return res.status(400).send({
+            message: message
+          });
+        })
+    }
+    else {
+      User.findOne({
+        mobile: req.body.username
       })
-      .catch(err => {
-        res.send('error: ' + err)
-      })
+        .then(user => {
+          if (user) {
+            if (bcrypt.compareSync(req.body.password, user.password)) {
+              const payload = {
+                _id: user._id,
+                mobile: user.mobile,
+                email: user.email
+              }
+              let token = jwt.sign(payload, process.env.SECRET_KEY, {
+                expiresIn: 1440
+              })
+              res.status(200).json({ token: token })
+            }
+            else {
+              res.json({ error: 'InCorrect Password' })
+            }
+          } else {
+            res.json({ error: 'Invalid user' })
+          }
+        })
+        .catch(err => {
+          var message = '';
+          if (err.message) {
+            message = err.message;
+          }
+          else {
+            message = err;
+          }
+          return res.status(400).send({
+            message: message
+          });
+        })
+    }  
   }
-  else {
-    res.json({ error: 'Passwords are mismatched' })
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
+  }
+
+})
+
+router.get('/view', (req, res) => {
+  try{
+    //var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
+    User.findOne({
+      _id: ObjectID(req.body.id)
+    })
+    .then(user => {
+      if (user) {
+        res.status(200).json(user)
+      } else {
+        res.send('User does not exist')
+      }
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
+  }
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
   }
 })
 
-router.delete('/deleteProfile', (req, res) => {
-  var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
-  User.deleteOne({
-    _id: decoded._id
-  })
-    //TODO bcrypt
+router.get('/get', (req, res) => {
+  try{
+    User.find({})
     .then(user => {
-      res.json({ message: "deleted" })
+      if (user) {
+        res.status(200).json(user)
+      } else {
+        res.send('No userData')
+      }
     })
     .catch(err => {
-      res.send('error: ' + err)
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
     })
+  }
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
+  }
+})
+
+
+router.put('/update', (req, res) => {
+  try{
+    //var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
+    let hash = bcrypt.hashSync(req.body.password, 10);
+    const userData = {
+      mobile: req.body.mobile,
+      email: req.body.email,
+      password: hash
+    }
+    if (req.body.password == req.body.confirmPassword) {
+      User.findOne({
+        _id: ObjectID(req.body.id)
+      })
+        //TODO bcrypt
+        .then(user => {
+          if (user) {
+            User.updateOne(userData)
+              .then(user => {
+                const payload = {
+                  _id: user._id,
+                  mobile: user.mobile,
+                  email: user.email
+                }
+                res.status(200).json({ token: payload, message: "updated" })
+              })
+              .catch(err => {
+                var message = '';
+                if (err.message) {
+                  message = err.message;
+                }
+                else {
+                  message = err;
+                }
+                return res.status(400).send({
+                  message: message
+                });
+              })
+          } else {
+            res.json({ error: 'User not exists' })
+          }
+        })
+        .catch(err => {
+          var message = '';
+          if (err.message) {
+            message = err.message;
+          }
+          else {
+            message = err;
+          }
+          return res.status(400).send({
+            message: message
+          });
+        })
+    }
+    else {
+      res.json({ error: 'Passwords are mismatched' })
+    }
+  }
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
+  }
+})
+
+router.delete('/delete', (req, res) => {
+  try{
+    //var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
+    User.deleteOne({
+      _id: ObjectID(req.body.id)
+    })
+    .then(user => {
+      res.status(200).json({ message: "deleted" })
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
+  }
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
+  }
 })
 
 module.exports = router
