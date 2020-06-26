@@ -40,7 +40,7 @@ app.use('/sub-category', SubCategory)
 app.use('/', (req, res) => {
   res.writeHead(200, {'Content-Type': 'text/html'});
   //Return the url part of the request object:
-  res.write('Application Connected');
+  res.write('Application Connected ');
   res.end();
 });
 
