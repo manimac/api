@@ -1,30 +1,19 @@
 const express = require('express')
 const router = express.Router()
 const cors = require('cors')
-const jwt = require('jsonwebtoken')
-var path = require('path')
-const multer = require('multer')
 const { Validator } = require('node-input-validator');
 
-const Application = require('./applicationModel')
+const Staff = require('./staffModel')
 router.use(cors())
-
-const storage = multer.diskStorage({
-  destination: (req, file, callBack) => {
-    callBack(null, 'uploads')
-  },
-  filename: (req, file, callBack) => {
-    const fileName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname)
-    callBack(null, file.fieldname + '-' + fileName)
-  }
-})
-
-let upload = multer({ storage: storage })
 
 router.post('/create', (req, res) => {
   const validate = new Validator(req.body, {
-    // licensing_location: 'required',
-    // licensing_type: 'required'
+    name: 'required',
+    mobile: 'required',
+    email: 'required|email',
+    role: 'required',
+    password: 'required',
+    confirmPassword: 'required'
   });
 
   try {
@@ -34,28 +23,16 @@ router.post('/create', (req, res) => {
       }
       else {
         const data = {
-          licensing_location: req.body.licensing_location,
-          licensing_type: req.body.licensing_type,
-          legal_type: req.body.legal_type,
-          duration: req.body.duration,
-          service_details: req.body.service_details,
-          requirement_documents: req.body.requirement_documents,
-          details: req.body.details,
-          upload_documents: req.body.upload_documents,
-          legal_type: req.body.legal_type,
-          contact_name: req.body.contact_name,
-          contact_no: req.body.contact_no,
-          contact_email: req.body.contact_email
+          name: req.body.name,
+          mobile: req.body.mobile,
+          email: req.body.email,
+          role: req.body.role,
+          password: req.body.password
         }
   
-        // check if application is existing then update data else create new one.
+        // check if staff is existing then update data else create new one.
         if(req.body.id){
-          // Application.findOne({
-          //   _id: req.body.id
-          // })
-          // .then(response => {
-          //   if (response) {
-          Application.updateOne({ "_id": req.body.id }, { "$set": req.body })
+          Staff.updateOne({ "_id": req.body.id }, { "$set": req.body })
             .then(response1 => {
               res.status(200).json({ success: response1, message: "updated" })
             })
@@ -73,7 +50,7 @@ router.post('/create', (req, res) => {
             })
         }
         else{
-          Application.create(data)
+          Staff.create(data)
           .then(response => {
             res.status(200).json({ success: response })
           })
@@ -109,12 +86,12 @@ router.post('/create', (req, res) => {
 })
 
 router.get('/get', (req, res) => {  
-  Application.find({})
+  Staff.find({})
   .then(response => {
     if (response) {
       res.status(200).json({ success: response })
     } else {
-      res.send('Application not found')
+      res.send('Staffs does not found')
     }
   })
   .catch(err => {
@@ -133,7 +110,7 @@ router.get('/get', (req, res) => {
 
 router.get('/view', (req, res) => {
   try{
-    Application.findOne({
+    Staff.findOne({
       _id: req.body.id
     })
     .then(response => {
@@ -141,7 +118,7 @@ router.get('/view', (req, res) => {
         res.status(200).json({ success: response })
         //res.json(response);
       } else {
-        res.send('Application does not exist')
+        res.send('Staff not exist')
       }
     })
     .catch(err => {
@@ -172,7 +149,7 @@ router.get('/view', (req, res) => {
 })
 
 router.delete('/delete', (req, res) => {
-  Application.deleteOne({
+  Staff.deleteOne({
     _id: req.body.id
   })
   .then(response => {

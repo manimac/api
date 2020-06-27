@@ -37,36 +37,20 @@ router.post('/create', upload.single('file'), (req, res) => {
           parent_category: req.body.parent_category ? req.body.parent_category : null,
           name_english: req.body.name_english,
           name_arabic: req.body.name_arabic,
-          icon: file.filename,
+          icon: file ? file.filename : null,
           color: req.body.color,
           business: req.body.business,
           individual: req.body.individual,
           sequence: req.body.sequence,
           active: false
         }
-        if (req.body.id) {
-          Category.findOne({
-            _id: ObjectID(req.body.id)
-          })
+        if(file && file.filename)
+          req.body.icon = file.filename;
+          
+        if(req.body.id){
+          Category.updateOne({ "_id": req.body.id }, { "$set": req.body })
             .then(response => {
-              if (response) {
-                Category.updateOne(data)
-                  .then(response1 => {
-                    res.status(200).json({ response: response1, message: "updated" })
-                  })
-                  .catch(err => {
-                    var message = '';
-                    if (err.message) {
-                      message = err.message;
-                    }
-                    else {
-                      message = err;
-                    }
-                    return res.status(400).send({
-                      message: message
-                    });
-                  })
-              }
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -84,7 +68,7 @@ router.post('/create', upload.single('file'), (req, res) => {
         else {
           Category.create(data)
             .then(response => {
-              res.status(200).json({ response: response })
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -118,7 +102,9 @@ router.post('/create', upload.single('file'), (req, res) => {
 })
 
 router.get('/get-category', (req, res) => {
-  Category.find({})
+  Category.find({
+    parent_category: null
+  })
     .then(response => {
       if (response) {
         res.status(200).json(response);
@@ -146,13 +132,26 @@ router.get('/get-subcategory', (req, res) => {
       if (response) {
         if (response.length > 0) {
           for (var i = 0; i < response.length; i++) {
-            Category.find({ id: response[i].parent_category })
+            Category.find({ _id: response[i].parent_category })
               .then(response2 => {
-                response[i].category_name = response2[0].name;
+                response[i].category_name = response2[0].name_english
+                // console.log(response[i].category_name)
               })
+              .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
           }
-        };
-        res.status(200).json(response);
+          res.status(200).json({ success: response });
+        }
       } else {
         res.send('Sub Category not found')
       }
@@ -174,10 +173,10 @@ router.get('/get-subcategory', (req, res) => {
 
 router.delete('/delete', (req, res) => {
   Category.deleteOne({
-    _id: ObjectID(req.body.id)
+    _id: req.body.id
   })
     .then(user => {
-      res.status(200).json({ response: response })
+      res.status(200).json({ success: user })
     })
     .catch(err => {
       var message = '';

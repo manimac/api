@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const cors = require('cors')
-const jwt = require('jsonwebtoken')
 var path = require('path')
 const multer = require('multer')
 const Events = require('./eventsModel')
@@ -29,46 +28,27 @@ router.post('/create', upload.single('file'), (req, res) => {
 
     // check if category is existing then update data else create new one.
     if(req.body.id){
-      Events.findOne({
-        _id: ObjectID(req.body.id)
-      })
-      .then(response => {
-        if (response) {
-          Events.updateOne(data)
-            .then(response1 => {
-              res.status(200).json({ response: response1, message: "updated" })
-            })
-            .catch(err => {
-              var message = '';
-              if (err.message) {
-                message = err.message;
-              }
-              else {
-                message = err;
-              }
-              return res.status(400).send({
-                message: message
-              });
-            })
-        }
-      })
-      .catch(err => {
-        var message = '';
-        if (err.message) {
-          message = err.message;
-        }
-        else {
-          message = err;
-        }
-        return res.status(400).send({
-          message: message
-        });
-      })
+      Events.updateOne({ "_id": req.body.id }, { "$set": req.body })
+        .then(response => {
+          res.status(200).json({ response: response, message: "updated" })
+        })
+        .catch(err => {
+          var message = '';
+          if (err.message) {
+            message = err.message;
+          }
+          else {
+            message = err;
+          }
+          return res.status(400).send({
+            message: message
+          });
+        })
     }
     else{
       Events.create(data)
       .then(response => {
-        res.status(200).json({ response: response })
+        res.status(200).json({ success: response })
       })
       .catch(err => {
         var message = '';
@@ -100,29 +80,15 @@ router.post('/create', upload.single('file'), (req, res) => {
 })
 
 router.get('/get', (req, res) => {
-  try{
-    Events.find({})
-    .then(response => {
-      if (response) {
-        res.status(200).json(response);
-      } else {
-        res.send('Category not found')
-      }
-    })
-    .catch(err => {
-      var message = '';
-      if (err.message) {
-        message = err.message;
-      }
-      else {
-        message = err;
-      }
-      return res.status(400).send({
-        message: message
-      });
-    })
-  }  
-  catch (err) {
+  Events.find({})
+  .then(response => {
+    if (response) {
+      res.status(200).json({ success: response });
+    } else {
+      res.send('Events not found')
+    }
+  })
+  .catch(err => {
     var message = '';
     if (err.message) {
       message = err.message;
@@ -133,35 +99,21 @@ router.get('/get', (req, res) => {
     return res.status(400).send({
       message: message
     });
-  }
+  })
 })
 
 router.get('/view', (req, res) => {
-  try{
-    Events.findOne({
-      _id: ObjectID(req.body.id)
-    })
-    .then(response => {
-      if (response) {
-        res.status(200).json(response)
-      } else {
-        res.send('Category does not exist')
-      }
-    })
-    .catch(err => {
-      var message = '';
-      if (err.message) {
-        message = err.message;
-      }
-      else {
-        message = err;
-      }
-      return res.status(400).send({
-        message: message
-      });
-    })
-  }
-  catch (err) {
+  Events.findOne({
+    _id: req.body.id
+  })
+  .then(response => {
+    if (response) {
+      res.status(200).json({ success: response });
+    } else {
+      res.send('Events does not exist')
+    }
+  })
+  .catch(err => {
     var message = '';
     if (err.message) {
       message = err.message;
@@ -172,32 +124,18 @@ router.get('/view', (req, res) => {
     return res.status(400).send({
       message: message
     });
-  }
+  })
 })
 
 
 router.delete('/delete', (req, res) => {
-  try{
-    Events.deleteOne({
-      _id: ObjectID(req.body.id)
-    })
-    .then(user => {
-      res.status(200).json({ response: response })
-    })
-    .catch(err => {
-      var message = '';
-      if (err.message) {
-        message = err.message;
-      }
-      else {
-        message = err;
-      }
-      return res.status(400).send({
-        message: message
-      });
-    })
-  }
-  catch (err) {
+  Events.deleteOne({
+    _id: req.body.id
+  })
+  .then(response => {
+    res.status(200).json({ success: response });
+  })
+  .catch(err => {
     var message = '';
     if (err.message) {
       message = err.message;
@@ -208,8 +146,7 @@ router.delete('/delete', (req, res) => {
     return res.status(400).send({
       message: message
     });
-  }
-
+  })
 })
 
 module.exports = router

@@ -31,13 +31,17 @@ var Users = require('./modules/AccountSettings/accountSettingsController');
 var Category = require('./modules/Categories/categoriesController');
 // var SubCategory = require('./modules/SubCategories/subCategoriesController');
 var Application = require('./modules/Application/applicationController');
-//var Events = require('./modules/Events/eventsController');
+var Events = require('./modules/Events/eventsController');
+var Staff = require('./modules/Staff/staffController');
+var Role = require('./modules/RoleSetting/roleSettingsController');
 
 app.use('/user', Users)
 app.use('/api/category', Category)
 app.use('/category', Category)
 app.use('/application', Application)
-//app.use('/events', Events)
+app.use('/events', Events)
+app.use('/staff', Staff)
+app.use('/role', Role)
 app.use('/', (req, res) => {
   // res.writeHead(200, {'Content-Type': 'text/html'});
   // //Return the url part of the request object:
