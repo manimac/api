@@ -149,7 +149,7 @@ router.get('/view', (req, res) => {
         res.status(200).json({ response: response })
         //res.json(response);
       } else {
-        res.send('Category does not exist')
+        res.send('Application does not exist')
       }
     })
     .catch(err => {

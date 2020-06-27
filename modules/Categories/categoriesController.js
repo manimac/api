@@ -26,16 +26,15 @@ router.post('/create', upload.single('file'), (req, res) => {
     color: 'required'
   });
 
-  try{
+  try {
     validate.check().then((matched) => {
       if (!matched) {
-        console.log(validate.errors)
         res.status(400).send(validate.errors);
       }
-      else{
+      else {
         const file = req.file;
         const data = {
-          //parent_category: req.body.parent_category,
+          parent_category: req.body.parent_category ? req.body.parent_category : null,
           name_english: req.body.name_english,
           name_arabic: req.body.name_arabic,
           icon: file.filename,
@@ -45,62 +44,60 @@ router.post('/create', upload.single('file'), (req, res) => {
           sequence: req.body.sequence,
           active: false
         }
-    
-        // check if category is existing then update data else create new one.
-        if(req.body.id){
+        if (req.body.id) {
           Category.findOne({
             _id: ObjectID(req.body.id)
           })
-          .then(response => {
-            if (response) {
-              Category.updateOne(data)
-                .then(response1 => {
-                  res.status(200).json({ response: response1, message: "updated" })
-                })
-                .catch(err => {
-                  var message = '';
-                  if (err.message) {
-                    message = err.message;
-                  }
-                  else {
-                    message = err;
-                  }
-                  return res.status(400).send({
-                    message: message
-                  });
-                })
-            }
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
+            .then(response => {
+              if (response) {
+                Category.updateOne(data)
+                  .then(response1 => {
+                    res.status(200).json({ response: response1, message: "updated" })
+                  })
+                  .catch(err => {
+                    var message = '';
+                    if (err.message) {
+                      message = err.message;
+                    }
+                    else {
+                      message = err;
+                    }
+                    return res.status(400).send({
+                      message: message
+                    });
+                  })
+              }
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
         }
-        else{
+        else {
           Category.create(data)
-          .then(response => {
-            res.status(200).json({ response: response })
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
+            .then(response => {
+              res.status(200).json({ response: response })
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
         }
       }
     })
@@ -120,11 +117,8 @@ router.post('/create', upload.single('file'), (req, res) => {
 
 })
 
-router.get('/get', (req, res) => {
-  
-  //throw new Error('Please enter the confirm password');
-  try{
-    Category.find({})
+router.get('/get-category', (req, res) => {
+  Category.find({})
     .then(response => {
       if (response) {
         res.status(200).json(response);
@@ -144,33 +138,23 @@ router.get('/get', (req, res) => {
         message: message
       });
     })
-  }  
-  catch (err) {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  }
 })
 
-router.get('/view', (req, res) => {
-  try{
-    //var decoded = jwt.verify(req.headers['authorization'], process.env.SECRET_KEY)
-    Category.findOne({
-      _id: ObjectID(req.body.id)
-      //_id: decoded._id
-    })
+router.get('/get-subcategory', (req, res) => {
+  Category.find({ parent_category: { $exists: true, $ne: null } })
     .then(response => {
       if (response) {
-        res.status(200).json(response)
+        if (response.length > 0) {
+          for (var i = 0; i < response.length; i++) {
+            Category.find({ id: response[i].parent_category })
+              .then(response2 => {
+                response[i].category_name = response2[0].name;
+              })
+          }
+        };
+        res.status(200).json(response);
       } else {
-        res.send('Category does not exist')
+        res.send('Sub Category not found')
       }
     })
     .catch(err => {
@@ -185,27 +169,13 @@ router.get('/view', (req, res) => {
         message: message
       });
     })
-  }
-  catch (err) {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  }
 })
 
 
 router.delete('/delete', (req, res) => {
-  try{
-    Category.deleteOne({
-      _id: ObjectID(req.body.id)
-    })
+  Category.deleteOne({
+    _id: ObjectID(req.body.id)
+  })
     .then(user => {
       res.status(200).json({ response: response })
     })
@@ -221,20 +191,6 @@ router.delete('/delete', (req, res) => {
         message: message
       });
     })
-  }
-  catch (err) {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  }
-
 })
 
 module.exports = router

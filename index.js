@@ -13,7 +13,7 @@ app.use(
   },{limit: '10mb', extended: true})
 )
 
-//const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
+// const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
 const mongoURI = 'mongodb+srv://venkat:Vijay9100@mycluster1-n3wil.mongodb.net/test';
 
 mongoose
@@ -29,21 +29,32 @@ mongoose
 
 var Users = require('./modules/AccountSettings/accountSettingsController');
 var Category = require('./modules/Categories/categoriesController');
-var SubCategory = require('./modules/SubCategories/subCategoriesController');
+// var SubCategory = require('./modules/SubCategories/subCategoriesController');
 var Application = require('./modules/Application/applicationController');
 //var Events = require('./modules/Events/eventsController');
 
 app.use('/user', Users)
+app.use('/api/category', Category)
 app.use('/category', Category)
-app.use('/sub-category', SubCategory)
 app.use('/application', Application)
 //app.use('/events', Events)
 app.use('/', (req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  //Return the url part of the request object:
-  res.write('Application Connected');
-  res.end();
+  // res.writeHead(200, {'Content-Type': 'text/html'});
+  // //Return the url part of the request object:
+  // res.write('Application Connected');
+  // res.end();
+
+  var message = 'Api was not found'
+  return res.status(400).send({
+    message: message
+  });
 });
+app.use('*', function(req,res){
+  var message = 'Api was not found'
+  return res.status(400).send({
+    message: message
+  });
+})
 
 app.listen(port, function() {
   console.log('Server is running on port: ' + port)
