@@ -1,30 +1,17 @@
 const express = require('express')
 const router = express.Router()
 const cors = require('cors')
-const jwt = require('jsonwebtoken')
-var path = require('path')
-const multer = require('multer')
 const { Validator } = require('node-input-validator');
 
-const Application = require('./applicationModel')
+const ApplicationView = require('./applicationViewModel')
+const Status = require('../Status/statusController')
 router.use(cors())
-
-const storage = multer.diskStorage({
-  destination: (req, file, callBack) => {
-    callBack(null, 'uploads')
-  },
-  filename: (req, file, callBack) => {
-    const fileName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname)
-    callBack(null, file.fieldname + '-' + fileName)
-  }
-})
-
-let upload = multer({ storage: storage })
 
 router.post('/create', (req, res) => {
   const validate = new Validator(req.body, {
-    // licensing_location: 'required',
-    // licensing_type: 'required'
+    statusID: 'required',
+    applicationID: 'required',
+    comments: 'required',
   });
 
   try {
@@ -33,29 +20,17 @@ router.post('/create', (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
-        const file = req.file;
         const data = {
-          licensing_location: req.body.licensing_location,
-          licensing_type: req.body.licensing_type,
-          legal_type: req.body.legal_type,
-          duration: req.body.duration,
-          service_details: req.body.service_details,
-          requirement_documents: file ? file.filename : null,
-          details: req.body.details,
-          upload_documents: req.body.upload_documents,
-          legal_type: req.body.legal_type,
-          contact_name: req.body.contact_name,
-          contact_no: req.body.contact_no,
-          contact_email: req.body.contact_email
+          statusID: req.body.role,
+          applicationID: req.body.applicationID,
+          comments: req.body.comments
         }
-        if(file && file.filename)
-          req.body.requirement_documents = file.filename;
   
-        // check if application is existing then update data else create new one.
+        // check if role is existing then update data else create new one.
         if(req.body.id){
-          Application.updateOne({ "_id": req.body.id }, { "$set": req.body })
-            .then(response1 => {
-              res.status(200).json({ success: response1, message: "updated" })
+          ApplicationView.updateOne({ "_id": req.body.id }, { "$set": data })
+            .then(response => {
+              res.status(200).json({ success: response, message: "updated" })
             })
             .catch(err => {
               var message = '';
@@ -71,7 +46,7 @@ router.post('/create', (req, res) => {
             })
         }
         else{
-          Application.create(data)
+          ApplicationView.create(data)
           .then(response => {
             res.status(200).json({ success: response })
           })
@@ -107,12 +82,12 @@ router.post('/create', (req, res) => {
 })
 
 router.get('/get', (req, res) => {  
-  Application.find({})
+  ApplicationView.find({})
   .then(response => {
     if (response) {
       res.status(200).json({ success: response })
     } else {
-      res.send('Application not found')
+      res.send('ApplicationViews does not found')
     }
   })
   .catch(err => {
@@ -129,17 +104,71 @@ router.get('/get', (req, res) => {
   })
 })
 
+router.get('/application-status', (req, res) => {
+  try{
+    ApplicationView.findOne({
+      applicationID: req.body.applicationID
+    })
+    .then(response => {
+      if(response && response.length > 0){
+        for (var i = 0; i < response.length; i++) {
+          Status.find({ _id: response[i].statusID })
+            .then(response2 => {
+              response[i].status_name = response2[0].status
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
+        }
+        res.status(200).json({ success: response });
+      }
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
+  }
+  catch (err) {
+    var message = '';
+    if (err.message) {
+      message = err.message;
+    }
+    else {
+      message = err;
+    }
+    return res.status(400).send({
+      message: message
+    });
+  }
+})
+
 router.get('/view', (req, res) => {
   try{
-    Application.findOne({
+    ApplicationView.findOne({
       _id: req.body.id
     })
     .then(response => {
       if (response) {
         res.status(200).json({ success: response })
-        //res.json(response);
       } else {
-        res.send('Application does not exist')
+        res.send('ApplicationView not exist')
       }
     })
     .catch(err => {
@@ -170,7 +199,7 @@ router.get('/view', (req, res) => {
 })
 
 router.delete('/delete', (req, res) => {
-  Application.deleteOne({
+  ApplicationView.deleteOne({
     _id: req.body.id
   })
   .then(response => {

@@ -22,9 +22,11 @@ router.post('/create', upload.single('file'), (req, res) => {
   try{
     const file = req.file;
     const data = {
-      icon: file.filename,
+      icon: file ? file.filename : null,
       comments: req.body.comments
     }
+    if(file && file.filename)
+      req.body.file_upload = file.filename;
 
     // check if category is existing then update data else create new one.
     if(req.body.id){

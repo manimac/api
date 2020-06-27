@@ -21,7 +21,7 @@ router.post('/create', (req, res) => {
       if (!matched) {
         res.status(400).send(validate.errors);
       }
-      else {
+      else if(req.body.password == req.body.confirmPassword) {
         const data = {
           name: req.body.name,
           mobile: req.body.mobile,
@@ -29,10 +29,9 @@ router.post('/create', (req, res) => {
           role: req.body.role,
           password: req.body.password
         }
-  
         // check if staff is existing then update data else create new one.
         if(req.body.id){
-          Staff.updateOne({ "_id": req.body.id }, { "$set": req.body })
+          Staff.updateOne({ "_id": req.body.id }, { "$set": data })
             .then(response1 => {
               res.status(200).json({ success: response1, message: "updated" })
             })
@@ -67,6 +66,9 @@ router.post('/create', (req, res) => {
             });
           })
         }
+      }
+      else {
+        throw new Error('Password are not matched');
       }
     })
   }
