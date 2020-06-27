@@ -35,8 +35,12 @@ var Events = require('./modules/Events/eventsController');
 var Staff = require('./modules/Staff/staffController');
 var Role = require('./modules/RoleSetting/roleSettingsController');
 
-app.use('/user', Users)
 app.use('/api/category', Category)
+app.use('/api/events', Events)
+app.use('/api/users', Users)
+app.use('/api/staffs', Staff)
+app.use('/api/roles', Role)
+app.use('/user', Users)
 app.use('/category', Category)
 app.use('/application', Application)
 app.use('/events', Events)

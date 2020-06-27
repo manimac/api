@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 // Create Schema
 const categorySchema = new Schema({
   parent_category: {
-    type: String
+    type: Schema.Types.ObjectId, ref: 'category'
   },
   name_english: {
     type: String
@@ -30,6 +30,7 @@ const categorySchema = new Schema({
   sequence: {
     type: Number
   }
-})
+}
+)
 
 module.exports = Category = mongoose.model('category', categorySchema)

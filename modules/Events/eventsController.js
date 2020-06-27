@@ -22,7 +22,7 @@ router.post('/create', upload.single('file'), (req, res) => {
   try{
     const file = req.file;
     const data = {
-      file_upload: file.filename,
+      icon: file.filename,
       comments: req.body.comments
     }
 
@@ -80,10 +80,10 @@ router.post('/create', upload.single('file'), (req, res) => {
 })
 
 router.get('/get', (req, res) => {
-  Events.find({})
+  Events.find({}).sort( { _id: -1 })
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response });
+      res.status(200).json(response);
     } else {
       res.send('Events not found')
     }
@@ -128,7 +128,7 @@ router.get('/view', (req, res) => {
 })
 
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Events.deleteOne({
     _id: req.body.id
   })

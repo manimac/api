@@ -226,11 +226,11 @@ router.get('/view', (req, res) => {
 
 router.get('/get', (req, res) => {
   User.find({})
-  .then(user => {
-    if (user) {
-      res.status(200).json({ response: user})
+  .then(users => {
+    if (users) {
+      res.status(200).json(users)
     } else {
-      res.send('No userData')
+      res.send([])
     }
   })
   .catch(err => {

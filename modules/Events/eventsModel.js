@@ -3,7 +3,7 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const eventsSchema = new Schema({
-  file_upload: {
+  icon: {
     type: String
   },
   comments: {

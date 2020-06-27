@@ -44,10 +44,10 @@ router.post('/create', upload.single('file'), (req, res) => {
           sequence: req.body.sequence,
           active: false
         }
-        if(file && file.filename)
+        if (file && file.filename)
           req.body.icon = file.filename;
-          
-        if(req.body.id){
+
+        if (req.body.id) {
           Category.updateOne({ "_id": req.body.id }, { "$set": req.body })
             .then(response => {
               res.status(200).json({ success: response })
@@ -104,7 +104,7 @@ router.post('/create', upload.single('file'), (req, res) => {
 router.get('/get-category', (req, res) => {
   Category.find({
     parent_category: null
-  })
+  }).sort( { _id: -1 })
     .then(response => {
       if (response) {
         res.status(200).json(response);
@@ -127,34 +127,20 @@ router.get('/get-category', (req, res) => {
 })
 
 router.get('/get-subcategory', (req, res) => {
-  Category.find({ parent_category: { $exists: true, $ne: null } })
-    .then(response => {
-      if (response) {
-        if (response.length > 0) {
-          for (var i = 0; i < response.length; i++) {
-            Category.find({ _id: response[i].parent_category })
-              .then(response2 => {
-                response[i].category_name = response2[0].name_english
-                // console.log(response[i].category_name)
-              })
-              .catch(err => {
-              var message = '';
-              if (err.message) {
-                message = err.message;
-              }
-              else {
-                message = err;
-              }
-              return res.status(400).send({
-                message: message
-              });
-            })
-          }
-          res.status(200).json({ success: response });
-        }
-      } else {
-        res.send('Sub Category not found')
+  Category.aggregate([
+    { $match: { parent_category: { $exists: true, $ne: null } } },
+    {
+      $lookup: {
+        from: "categories",
+        localField: "parent_category",
+        foreignField: "_id",
+        as: "parent_categories"
       }
+    }, 
+    { $sort : { _id : -1 }}
+  ])
+    .then(response => {
+      res.status(200).json(response);
     })
     .catch(err => {
       var message = '';
@@ -168,10 +154,55 @@ router.get('/get-subcategory', (req, res) => {
         message: message
       });
     })
+  // Category.find({ parent_category: { $exists: true, $ne: null } })
+  //   .then(response => {
+  //     if (response) {
+  //       if (response.length > 0) {
+  //         for (var i = 0; i < response.length; i++) {
+  //           Category.find({ _id: response[i].parent_category })
+  //             .then(response2 => {
+  //               response[i].category_name = response2[0].name_english
+
+  //               // console.log(response[i].category_name)
+  //             })
+  //             .catch(err => {
+  //             var message = '';
+  //             if (err.message) {
+  //               message = err.message;
+  //             }
+  //             else {
+  //               message = err;
+  //             }
+  //             return res.status(400).send({
+  //               message: message
+  //             });
+  //           })
+  //         }
+  //         res.status(200).json(response);
+  //       }
+  //       else{
+  //         res.status(200).json([]);
+  //       }
+  //     } else {
+  //       res.status(200).json([]);
+  //     }
+  //   })
+  //   .catch(err => {
+  //     var message = '';
+  //     if (err.message) {
+  //       message = err.message;
+  //     }
+  //     else {
+  //       message = err;
+  //     }
+  //     return res.status(400).send({
+  //       message: message
+  //     });
+  //   })
 })
 
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Category.deleteOne({
     _id: req.body.id
   })
