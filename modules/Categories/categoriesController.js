@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 var path = require('path')
 const multer = require('multer')
 const Category = require('./categoriesModel')
+const { Validator } = require('node-input-validator');
 router.use(cors())
 
 const storage = multer.diskStorage({
@@ -20,76 +21,89 @@ const storage = multer.diskStorage({
 let upload = multer({ storage: storage })
 
 router.post('/create', upload.single('file'), (req, res) => {
-  try{
-    const file = req.file;
-    const data = {
-      parent_category: req.body.parent_category,
-      name_english: req.body.name_english,
-      name_arabic: req.body.name_arabic,
-      icon: file.filename,
-      color: req.body.color,
-      business: req.body.business,
-      individual: req.body.individual,
-      sequence: req.body.sequence,
-      active: false
-    }
+  const validate = new Validator(req.body, {
+    name_english: 'required',
+    color: 'required'
+  });
 
-    // check if category is existing then update data else create new one.
-    if(req.body.id){
-      Category.findOne({
-        _id: ObjectID(req.body.id)
-      })
-      .then(response => {
-        if (response) {
-          Category.updateOne(data)
-            .then(response1 => {
-              res.status(200).json({ response: response1, message: "updated" })
-            })
-            .catch(err => {
-              var message = '';
-              if (err.message) {
-                message = err.message;
-              }
-              else {
-                message = err;
-              }
-              return res.status(400).send({
-                message: message
-              });
-            })
+  try{
+    validate.check().then((matched) => {
+      if (!matched) {
+        console.log(validate.errors)
+        res.status(400).send(validate.errors);
+      }
+      else{
+        const file = req.file;
+        const data = {
+          //parent_category: req.body.parent_category,
+          name_english: req.body.name_english,
+          name_arabic: req.body.name_arabic,
+          icon: file.filename,
+          color: req.body.color,
+          business: req.body.business,
+          individual: req.body.individual,
+          sequence: req.body.sequence,
+          active: false
         }
-      })
-      .catch(err => {
-        var message = '';
-        if (err.message) {
-          message = err.message;
+    
+        // check if category is existing then update data else create new one.
+        if(req.body.id){
+          Category.findOne({
+            _id: ObjectID(req.body.id)
+          })
+          .then(response => {
+            if (response) {
+              Category.updateOne(data)
+                .then(response1 => {
+                  res.status(200).json({ response: response1, message: "updated" })
+                })
+                .catch(err => {
+                  var message = '';
+                  if (err.message) {
+                    message = err.message;
+                  }
+                  else {
+                    message = err;
+                  }
+                  return res.status(400).send({
+                    message: message
+                  });
+                })
+            }
+          })
+          .catch(err => {
+            var message = '';
+            if (err.message) {
+              message = err.message;
+            }
+            else {
+              message = err;
+            }
+            return res.status(400).send({
+              message: message
+            });
+          })
         }
-        else {
-          message = err;
+        else{
+          Category.create(data)
+          .then(response => {
+            res.status(200).json({ response: response })
+          })
+          .catch(err => {
+            var message = '';
+            if (err.message) {
+              message = err.message;
+            }
+            else {
+              message = err;
+            }
+            return res.status(400).send({
+              message: message
+            });
+          })
         }
-        return res.status(400).send({
-          message: message
-        });
-      })
-    }
-    else{
-      Category.create(data)
-      .then(response => {
-        res.status(200).json({ response: response })
-      })
-      .catch(err => {
-        var message = '';
-        if (err.message) {
-          message = err.message;
-        }
-        else {
-          message = err;
-        }
-        return res.status(400).send({
-          message: message
-        });
-      })
-    }
+      }
+    })
   }
   catch (err) {
     var message = '';

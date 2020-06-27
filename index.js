@@ -13,9 +13,8 @@ app.use(
   },{limit: '10mb', extended: true})
 )
 
-// const mongoURI = 'mongodb://localhost:27017/myDB'
-const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
-// const mongoURI = 'mongodb+srv://venkat:Vijay9100@mycluster1-n3wil.mongodb.net/test';
+//const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
+const mongoURI = 'mongodb+srv://venkat:Vijay9100@mycluster1-n3wil.mongodb.net/test';
 
 mongoose
   .connect(
@@ -32,14 +31,13 @@ var Users = require('./modules/AccountSettings/accountSettingsController');
 var Category = require('./modules/Categories/categoriesController');
 var SubCategory = require('./modules/SubCategories/subCategoriesController');
 var Application = require('./modules/Application/applicationController');
-var Events = require('./modules/Events/eventsController');
-
+//var Events = require('./modules/Events/eventsController');
 
 app.use('/user', Users)
 app.use('/category', Category)
 app.use('/sub-category', SubCategory)
 app.use('/application', Application)
-app.use('/events', Events)
+//app.use('/events', Events)
 app.use('/', (req, res) => {
   res.writeHead(200, {'Content-Type': 'text/html'});
   //Return the url part of the request object:

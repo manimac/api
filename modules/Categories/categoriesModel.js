@@ -3,9 +3,9 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const categorySchema = new Schema({
-  parent_category: {
-    type: String
-  },
+  // parent_category: {
+  //   type: String
+  // },
   name_english: {
     type: String
   },
