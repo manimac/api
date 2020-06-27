@@ -25,7 +25,7 @@ router.post('/register', (req, res) => {
       if (!matched) {
         res.status(400).send(validate.errors);
       }
-      else {
+      else if(req.body.password == req.body.confirmPassword) {
         let hash = bcrypt.hashSync(req.body.password, 10);
         const userData = {
           mobile: req.body.mobile,
@@ -78,6 +78,9 @@ router.post('/register', (req, res) => {
               message: message
             });
           })
+      }
+      else {
+        throw new Error('Password are not matched');
       }
     });
   }
