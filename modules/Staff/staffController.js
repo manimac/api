@@ -12,8 +12,7 @@ router.post('/create', (req, res) => {
     mobile: 'required',
     email: 'required|email',
     role: 'required',
-    password: 'required',
-    confirmPassword: 'required'
+    password: 'required'
   });
 
   try {
@@ -21,7 +20,7 @@ router.post('/create', (req, res) => {
       if (!matched) {
         res.status(400).send(validate.errors);
       }
-      else if(req.body.password == req.body.confirmPassword) {
+      else {
         const data = {
           name: req.body.name,
           mobile: req.body.mobile,
@@ -30,7 +29,7 @@ router.post('/create', (req, res) => {
           password: req.body.password
         }
         // check if staff is existing then update data else create new one.
-        if(req.body.id){
+        if (req.body.id) {
           Staff.updateOne({ "_id": req.body.id }, { "$set": data })
             .then(response1 => {
               res.status(200).json({ success: response1, message: "updated" })
@@ -48,27 +47,24 @@ router.post('/create', (req, res) => {
               });
             })
         }
-        else{
+        else {
           Staff.create(data)
-          .then(response => {
-            res.status(200).json({ success: response })
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
+            .then(response => {
+              res.status(200).json({ success: response })
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
         }
-      }
-      else {
-        throw new Error('Password are not matched');
       }
     })
   }
@@ -87,40 +83,22 @@ router.post('/create', (req, res) => {
 
 })
 
-router.get('/get', (req, res) => {  
-  Staff.find({})
-  .then(response => {
-    if (response) {
-      res.status(200).json(response)
-    } else {
-      res.send('Staffs does not found')
-    }
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
-})
-
-router.get('/view', (req, res) => {
-  try{
-    Staff.findOne({
-      _id: req.body.id
-    })
+router.get('/get', (req, res) => {
+  Staff.aggregate([
+    {
+      $lookup: {
+        from: "roles",
+        localField: "role",
+        foreignField: "_id",
+        as: "roles"
+      }
+    },
+  ])
     .then(response => {
       if (response) {
-        res.status(200).json({ success: response })
-        //res.json(response);
+        res.status(200).json(response)
       } else {
-        res.send('Staff not exist')
+        res.send('Staffs does not found')
       }
     })
     .catch(err => {
@@ -135,6 +113,33 @@ router.get('/view', (req, res) => {
         message: message
       });
     })
+})
+
+router.get('/view', (req, res) => {
+  try {
+    Staff.findOne({
+      _id: req.body.id
+    })
+      .then(response => {
+        if (response) {
+          res.status(200).json({ success: response })
+          //res.json(response);
+        } else {
+          res.send('Staff not exist')
+        }
+      })
+      .catch(err => {
+        var message = '';
+        if (err.message) {
+          message = err.message;
+        }
+        else {
+          message = err;
+        }
+        return res.status(400).send({
+          message: message
+        });
+      })
   }
   catch (err) {
     var message = '';
@@ -154,21 +159,21 @@ router.delete('/delete', (req, res) => {
   Staff.deleteOne({
     _id: req.body.id
   })
-  .then(response => {
-    res.status(200).json({ success: response })
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
+    .then(response => {
+      res.status(200).json({ success: response })
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
 })
 
 module.exports = router

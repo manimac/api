@@ -13,12 +13,9 @@ const staffSchema = new Schema({
     type: String
   },
   role: {
-    type: String
+    type: Schema.Types.ObjectId, ref: 'roles'
   },
   password: {
-    type: String
-  },
-  confirmPassword: {
     type: String
   }
 })
