@@ -50,11 +50,11 @@ router.post('/create', upload.single('file'), (req, res) => {
           contact_email: req.body.contact_email,
           status: []
         }
-        if(file && file.filename)
+        if (file && file.filename)
           req.body.requirement_documents = file.filename;
-  
+
         // check if application is existing then update data else create new one.
-        if(req.body.id){
+        if (req.body.id) {
           Application.updateOne({ "_id": req.body.id }, { "$set": req.body })
             .then(response1 => {
               res.status(200).json({ success: response1, message: "updated" })
@@ -72,45 +72,23 @@ router.post('/create', upload.single('file'), (req, res) => {
               });
             })
         }
-        else{
+        else {
           Application.create(data)
-          .then(response => {
-            if(response){
-              let notificationData = {
-                applicationID: response.id,
-                //userID: req.body.userID ? req.body.userID : 'testing1', 
-                createdAt: new Date().toISOString()
+            .then(response => {
+              res.status(200).json({ success: response })
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
               }
-              ApplicationNotification.create(notificationData)
-              .then(response1 => {
-                res.status(200).json({ success: response })
-              })
-              .catch(err => {
-                var message = '';
-                if (err.message) {
-                  message = err.message;
-                }
-                else {
-                  message = err;
-                }
-                return res.status(400).send({
-                  message: message
-                });
-              })
-            }
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
         }
       }
     })
@@ -130,16 +108,58 @@ router.post('/create', upload.single('file'), (req, res) => {
 
 })
 
-router.get('/get', (req, res) => {  
-  Application.find({})
-  .then(response => {
-    if (response) {
-      res.status(200).json(response)
-    } else {
-      res.send('Application not found')
-    }
-  })
-  .catch(err => {
+router.post('/statusadd', (req, res) => {
+
+  try {
+
+    Application.updateOne({
+      "_id": req.body.applicationId
+    }, {
+      "$push": {
+        "status": {
+          "statusId": req.body.statusId,
+          "name": req.body.name,
+          "comments": req.body.comments
+        }
+      }
+    }).then(response1 => {
+      res.status(200).json({ success: response1, message: "updated" })
+    })
+      .catch(err => {
+        var message = '';
+        if (err.message) {
+          message = err.message;
+        }
+        else {
+          message = err;
+        }
+        return res.status(400).send({
+          message: message
+        });
+      })
+    // }
+    // else{
+    //   Application.create(data)
+    //   .then(response => {
+    //     res.status(200).json({ success: response })
+    //   })
+    //   .catch(err => {
+    //     var message = '';
+    //     if (err.message) {
+    //       message = err.message;
+    //     }
+    //     else {
+    //       message = err;
+    //     }
+    //     return res.status(400).send({
+    //       message: message
+    //     });
+    //   })
+    // }
+    //   }
+    // })
+  }
+  catch (err) {
     var message = '';
     if (err.message) {
       message = err.message;
@@ -150,16 +170,18 @@ router.get('/get', (req, res) => {
     return res.status(400).send({
       message: message
     });
-  })
+  }
+
 })
 
-router.get('/view', (req, res) => {
-  try{
-    Application.aggregate([
-      {$match: {id: req.query.applicationId}}
-    ])
+router.get('/get', (req, res) => {
+  Application.find({})
     .then(response => {
-      res.status(200).json(response);
+      if (response) {
+        res.status(200).json({ success: response })
+      } else {
+        res.send('Application not found')
+      }
     })
     .catch(err => {
       var message = '';
@@ -173,6 +195,28 @@ router.get('/view', (req, res) => {
         message: message
       });
     })
+})
+
+router.get('/view', (req, res) => {
+  try {
+    Application.aggregate([
+      { $match: { id: req.query.applicationId } }
+    ])
+      .then(response => {
+        res.status(200).json(response);
+      })
+      .catch(err => {
+        var message = '';
+        if (err.message) {
+          message = err.message;
+        }
+        else {
+          message = err;
+        }
+        return res.status(400).send({
+          message: message
+        });
+      })
   }
   catch (err) {
     var message = '';
@@ -192,21 +236,21 @@ router.post('/delete', (req, res) => {
   Application.deleteOne({
     _id: req.body.id
   })
-  .then(response => {
-    res.status(200).json({ success: response })
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
+    .then(response => {
+      res.status(200).json({ success: response })
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
 })
 
 module.exports = router
