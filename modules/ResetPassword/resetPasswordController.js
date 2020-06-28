@@ -8,7 +8,7 @@ const {Validator} = require('node-input-validator');
 
 const Email = require('email-templates');
 const ResetPassword = require('./resetPasswordModel')
-const User = require('../AccountSettings')
+const User = require('../AccountSettings/accountSettingsModel')
 router.use(cors())
 
 router.post('/change-password', (req, res) => {

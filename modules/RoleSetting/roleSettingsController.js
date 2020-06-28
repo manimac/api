@@ -8,7 +8,7 @@ router.use(cors())
 
 router.post('/create', (req, res) => {
   const validate = new Validator(req.body, {
-    role: 'required'
+    name: 'required'
   });
 
   try {
@@ -18,7 +18,7 @@ router.post('/create', (req, res) => {
       }
       else {
         const data = {
-          role: req.body.role
+          name: req.body.name
         }
   
         // check if role is existing then update data else create new one.
@@ -80,7 +80,7 @@ router.get('/get', (req, res) => {
   Role.find({})
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response })
+      res.status(200).json(response)
     } else {
       res.send('Roles does not found')
     }

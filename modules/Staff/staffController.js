@@ -91,7 +91,7 @@ router.get('/get', (req, res) => {
   Staff.find({})
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response })
+      res.status(200).json(response)
     } else {
       res.send('Staffs does not found')
     }
