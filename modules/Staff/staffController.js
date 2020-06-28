@@ -155,7 +155,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Staff.deleteOne({
     _id: req.body.id
   })

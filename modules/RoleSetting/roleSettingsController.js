@@ -138,7 +138,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Role.deleteOne({
     _id: req.body.id
   })
