@@ -6,7 +6,10 @@ const subCategorySchema = new Schema({
   parent_category: {
     type: String
   },
-  name: {
+  name_english: {
+    type: String
+  },
+  name_arabic: {
     type: String
   },
   icon: {
@@ -14,6 +17,12 @@ const subCategorySchema = new Schema({
   },
   color: {
     type: String
+  },
+  business: {
+    type: Boolean
+  },
+  individual: {
+    type: Boolean
   },
   active: {
     type: Boolean

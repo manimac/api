@@ -4,9 +4,12 @@ const Schema = mongoose.Schema
 // Create Schema
 const categorySchema = new Schema({
   parent_category: {
+    type: Schema.Types.ObjectId, ref: 'category'
+  },
+  name_english: {
     type: String
   },
-  name: {
+  name_arabic: {
     type: String
   },
   icon: {
@@ -15,12 +18,19 @@ const categorySchema = new Schema({
   color: {
     type: String
   },
+  business: {
+    type: Boolean
+  },
+  individual: {
+    type: Boolean
+  },
   active: {
     type: Boolean
   },
   sequence: {
     type: Number
   }
-})
+}
+)
 
 module.exports = Category = mongoose.model('category', categorySchema)
