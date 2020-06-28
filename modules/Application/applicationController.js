@@ -7,6 +7,7 @@ const multer = require('multer')
 const { Validator } = require('node-input-validator');
 
 const Application = require('./applicationModel')
+const ApplicationNotification = require('../Notification/applicationNotificationModel')
 router.use(cors())
 
 const storage = multer.diskStorage({
@@ -73,7 +74,29 @@ router.post('/create', (req, res) => {
         else{
           Application.create(data)
           .then(response => {
-            res.status(200).json({ success: response })
+            if(response){
+              let notificationData = {
+                applicationID: response.id,
+                //userID: req.body.userID ? req.body.userID : 'testing1', 
+                createdAt: new Date().toISOString()
+              }
+              ApplicationNotification.create(notificationData)
+              .then(response1 => {
+                res.status(200).json({ success: response })
+              })
+              .catch(err => {
+                var message = '';
+                if (err.message) {
+                  message = err.message;
+                }
+                else {
+                  message = err;
+                }
+                return res.status(400).send({
+                  message: message
+                });
+              })
+            }
           })
           .catch(err => {
             var message = '';
@@ -110,7 +133,7 @@ router.get('/get', (req, res) => {
   Application.find({})
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response })
+      res.status(200).json(response)
     } else {
       res.send('Application not found')
     }
@@ -136,7 +159,7 @@ router.get('/view', (req, res) => {
     })
     .then(response => {
       if (response) {
-        res.status(200).json({ success: response })
+        res.status(200).json(response)
         //res.json(response);
       } else {
         res.send('Application does not exist')
@@ -169,7 +192,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Application.deleteOne({
     _id: req.body.id
   })

@@ -4,7 +4,7 @@ const cors = require('cors')
 const { Validator } = require('node-input-validator');
 
 const ApplicationView = require('./applicationViewModel')
-const Status = require('../Status/statusController')
+const Status = require('../Status/statusModel')
 router.use(cors())
 
 router.post('/create', (req, res) => {
@@ -20,8 +20,8 @@ router.post('/create', (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
-        const data = {
-          statusID: req.body.role,
+        let data = {
+          statusID: req.body.statusID,
           applicationID: req.body.applicationID,
           comments: req.body.comments
         }
@@ -30,7 +30,7 @@ router.post('/create', (req, res) => {
         if(req.body.id){
           ApplicationView.updateOne({ "_id": req.body.id }, { "$set": data })
             .then(response => {
-              res.status(200).json({ success: response, message: "updated" })
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -85,7 +85,7 @@ router.get('/get', (req, res) => {
   ApplicationView.find({})
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response })
+      res.status(200).json(response)
     } else {
       res.send('ApplicationViews does not found')
     }
@@ -106,7 +106,7 @@ router.get('/get', (req, res) => {
 
 router.get('/application-status', (req, res) => {
   try{
-    ApplicationView.findOne({
+    ApplicationView.find({
       applicationID: req.body.applicationID
     })
     .then(response => {
@@ -129,7 +129,7 @@ router.get('/application-status', (req, res) => {
               });
             })
         }
-        res.status(200).json({ success: response });
+        res.status(200).json(response);
       }
     })
     .catch(err => {
@@ -166,7 +166,7 @@ router.get('/view', (req, res) => {
     })
     .then(response => {
       if (response) {
-        res.status(200).json({ success: response })
+        res.status(200).json(response)
       } else {
         res.send('ApplicationView not exist')
       }
@@ -198,7 +198,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   ApplicationView.deleteOne({
     _id: req.body.id
   })

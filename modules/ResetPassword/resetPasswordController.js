@@ -109,7 +109,7 @@ router.post('/reset-password', (req, res) => {
         })
         .then(response => {
           if (response) {
-            let password = Math.round(Math.random() * 1E9)
+            let password = Math.round(Math.random() * 1E9).toString()
             let hash = bcrypt.hashSync(password, 10);
             const data = {
               password: hash
@@ -119,10 +119,10 @@ router.post('/reset-password', (req, res) => {
               const email = new Email({
                 secure: true,
                 message: {
-                    from: 'noreply@karyatech.com',
+                    from: 'venkat99mca@gmail.com',
                     subject: 'Temporary Password for Prozone Account',
                     html: `<div>
-                    <p>This is Temporary password <strong>${password}</strong> to reset your Prozone account</p><br>
+                    <p>Temporary password is <strong>${password}</strong>. It's to reset your Prozone account</p><br>
                     <p><i><small>Don't reply to this mail<small></i>.</p>
                 </div>`
   
@@ -131,12 +131,19 @@ router.post('/reset-password', (req, res) => {
                 send: true,
                 preview: false,
                 transport: {
-                    host: 'smtp.office365.com',
-                    port: 25,
-                    auth: {
-                        user: "noreply@karyatech.com",
-                        pass: "erp@123"
-                    },
+                  service: 'Gmail',
+                  secureConnection: true,
+                  auth: {
+                    user: 'venkat99mca@gmail.com', 
+                    pass: 'Venkat@#9100' 
+                  }
+                    // service: 'gmail',
+                    // host: 'smtp.gmail.com',//'smtp.office365.com',
+                    // port: 465,
+                    // auth: {
+                    //     user: "venkat99mca@gmail.com",
+                    //     pass: "Venkat@#9100"
+                    // },
                 }
             });
   

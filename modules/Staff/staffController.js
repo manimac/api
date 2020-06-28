@@ -122,7 +122,7 @@ router.get('/view', (req, res) => {
     })
       .then(response => {
         if (response) {
-          res.status(200).json({ success: response })
+          res.status(200).json(response)
           //res.json(response);
         } else {
           res.send('Staff not exist')

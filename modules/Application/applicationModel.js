@@ -25,7 +25,7 @@ const applicationSchema = new Schema({
     type: String
   },
   upload_documents: {
-    type: String              ///////////////
+    type: String              
   },
   contact_name:{
     type: String
