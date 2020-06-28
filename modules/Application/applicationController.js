@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 var path = require('path')
 const multer = require('multer')
 const { Validator } = require('node-input-validator');
-
+const mongoose = require('mongoose')
 const Application = require('./applicationModel')
 router.use(cors())
 
@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 let upload = multer({ storage: storage })
 
-router.post('/create', (req, res) => {
+router.post('/create', upload.single('file'), (req, res) => {
   const validate = new Validator(req.body, {
     // licensing_location: 'required',
     // licensing_type: 'required'
@@ -46,7 +46,8 @@ router.post('/create', (req, res) => {
           legal_type: req.body.legal_type,
           contact_name: req.body.contact_name,
           contact_no: req.body.contact_no,
-          contact_email: req.body.contact_email
+          contact_email: req.body.contact_email,
+          status: []
         }
         if(file && file.filename)
           req.body.requirement_documents = file.filename;
@@ -131,16 +132,11 @@ router.get('/get', (req, res) => {
 
 router.get('/view', (req, res) => {
   try{
-    Application.findOne({
-      _id: req.body.id
-    })
+    Application.aggregate([
+      {$match: {id: req.query.applicationId}}
+    ])
     .then(response => {
-      if (response) {
-        res.status(200).json({ success: response })
-        //res.json(response);
-      } else {
-        res.send('Application does not exist')
-      }
+      res.status(200).json(response);
     })
     .catch(err => {
       var message = '';

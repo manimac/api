@@ -25,9 +25,9 @@ router.post('/create', (req, res) => {
           applicationID: req.body.applicationID,
           comments: req.body.comments
         }
-  
+
         // check if role is existing then update data else create new one.
-        if(req.body.id){
+        if (req.body.id) {
           ApplicationView.updateOne({ "_id": req.body.id }, { "$set": data })
             .then(response => {
               res.status(200).json({ success: response, message: "updated" })
@@ -45,76 +45,10 @@ router.post('/create', (req, res) => {
               });
             })
         }
-        else{
+        else {
           ApplicationView.create(data)
-          .then(response => {
-            res.status(200).json({ success: response })
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
-        }
-      }
-    })
-  }
-  catch (err) {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  }
-
-})
-
-router.get('/get', (req, res) => {  
-  ApplicationView.find({})
-  .then(response => {
-    if (response) {
-      res.status(200).json({ success: response })
-    } else {
-      res.send('ApplicationViews does not found')
-    }
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
-})
-
-router.get('/application-status', (req, res) => {
-  try{
-    ApplicationView.findOne({
-      applicationID: req.body.applicationID
-    })
-    .then(response => {
-      if(response && response.length > 0){
-        for (var i = 0; i < response.length; i++) {
-          Status.find({ _id: response[i].statusID })
-            .then(response2 => {
-              response[i].status_name = response2[0].status
+            .then(response => {
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -129,20 +63,7 @@ router.get('/application-status', (req, res) => {
               });
             })
         }
-        res.status(200).json({ success: response });
       }
-    })
-    .catch(err => {
-      var message = '';
-      if (err.message) {
-        message = err.message;
-      }
-      else {
-        message = err;
-      }
-      return res.status(400).send({
-        message: message
-      });
     })
   }
   catch (err) {
@@ -157,18 +78,16 @@ router.get('/application-status', (req, res) => {
       message: message
     });
   }
+
 })
 
-router.get('/view', (req, res) => {
-  try{
-    ApplicationView.findOne({
-      _id: req.body.id
-    })
+router.get('/get', (req, res) => {
+  ApplicationView.find({})
     .then(response => {
       if (response) {
         res.status(200).json({ success: response })
       } else {
-        res.send('ApplicationView not exist')
+        res.send('ApplicationViews does not found')
       }
     })
     .catch(err => {
@@ -183,6 +102,53 @@ router.get('/view', (req, res) => {
         message: message
       });
     })
+})
+
+router.get('/application-status', (req, res) => {
+  ApplicationView.findOne({
+    applicationID: req.body.applicationID
+  })
+    .then(response => {
+      res.status(200).json(response);
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
+})
+
+router.get('/view', (req, res) => {
+  try {
+    ApplicationView.findOne({
+      _id: req.body.id
+    })
+      .then(response => {
+        if (response) {
+          res.status(200).json({ success: response })
+        } else {
+          res.send('ApplicationView not exist')
+        }
+      })
+      .catch(err => {
+        var message = '';
+        if (err.message) {
+          message = err.message;
+        }
+        else {
+          message = err;
+        }
+        return res.status(400).send({
+          message: message
+        });
+      })
   }
   catch (err) {
     var message = '';
@@ -202,21 +168,21 @@ router.delete('/delete', (req, res) => {
   ApplicationView.deleteOne({
     _id: req.body.id
   })
-  .then(response => {
-    res.status(200).json({ success: response })
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
+    .then(response => {
+      res.status(200).json({ success: response })
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
 })
 
 module.exports = router
