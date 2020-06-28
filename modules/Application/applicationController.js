@@ -48,6 +48,7 @@ router.post('/create', upload.single('file'), (req, res) => {
           contact_name: req.body.contact_name,
           contact_no: req.body.contact_no,
           contact_email: req.body.contact_email,
+          user_id: req.body.user_id,
           status: []
         }
         if (file && file.filename)
