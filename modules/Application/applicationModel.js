@@ -35,6 +35,9 @@ const applicationSchema = new Schema({
   },
   contact_email: {
     type: String
+  },
+  status:{
+    type: Array
   }
 })
 

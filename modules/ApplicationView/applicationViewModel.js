@@ -4,10 +4,10 @@ const Schema = mongoose.Schema
 // Create Schema
 const applicationViewSchema = new Schema({
   statusID: {
-    type: String
+    type: Schema.Types.ObjectId, ref: 'status'
   },
   applicationID: {
-    type: String
+    type: Schema.Types.ObjectId, ref: 'applications'
   },
   comments: {
     type: String
