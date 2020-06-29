@@ -3,12 +3,19 @@ const router = express.Router()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 var path = require('path')
+var app = express()
 const multer = require('multer')
+const session = require('express-session');
 const { Validator } = require('node-input-validator');
 const mongoose = require('mongoose')
+
 const Application = require('./applicationModel')
 const ApplicationNotification = require('../Notification/applicationNotificationModel')
+app.use(session({secret: 'ssshhhhh', saveUninitialized: true, resave: true}));
 router.use(cors())
+
+process.env.SECRET_KEY = 'secret'
+let sessionStorage;
 
 const storage = multer.diskStorage({
   destination: (req, file, callBack) => {
@@ -76,7 +83,31 @@ router.post('/create', upload.single('file'), (req, res) => {
         else {
           Application.create(data)
             .then(response => {
-              res.status(200).json({ success: response })
+              if(response){
+                sessionStorage = req.session;
+                let decoded = jwt.verify(sessionStorage.token, process.env.SECRET_KEY)
+                let notificationData = {
+                  applicationID: response.id,
+                  userID: decoded._id,
+                  createdAt: new Date().toISOString()
+                }
+                ApplicationNotification.create(notificationData)
+                .then(response1 => {
+                  res.status(200).json({ success: response })
+                })
+                .catch(err => {
+                  var message = '';
+                  if (err.message) {
+                    message = err.message;
+                  }
+                  else {
+                    message = err;
+                  }
+                  return res.status(400).send({
+                    message: message
+                  });
+                })
+              }
             })
             .catch(err => {
               var message = '';
