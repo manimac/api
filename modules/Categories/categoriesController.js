@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 var path = require('path')
 const multer = require('multer')
 const Category = require('./categoriesModel')
+const Settings = require('./settingsModel');
 const { Validator } = require('node-input-validator');
 router.use(cors())
 
@@ -199,6 +200,29 @@ router.get('/get-subcategory', (req, res) => {
   //       message: message
   //     });
   //   })
+})
+
+router.get('/get-landingpage', (req, res) => {
+  Settings.find()
+    .then(response => {
+      if (response) {
+        res.status(200).json(response);
+      } else {
+        res.send('Not found')
+      }
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
 })
 
 

@@ -200,9 +200,7 @@ router.get('/get', (req, res) => {
 
 router.get('/view', (req, res) => {
   try {
-    Application.aggregate([
-      { $match: { id: req.query.applicationId } }
-    ])
+    Application.find({_id: req.query.applicationId})
       .then(response => {
         res.status(200).json(response);
       })
