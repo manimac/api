@@ -41,25 +41,39 @@ router.post('/create', upload.single('file'), (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
+        sessionStorage = req.session;
+        let decoded;
         const file = req.file;
-        const data = {
-          licensing_location: req.body.licensing_location,
-          licensing_type: req.body.licensing_type,
-          legal_type: req.body.legal_type,
-          duration: req.body.duration,
-          service_details: req.body.service_details,
-          requirement_documents: file ? file.filename : null,
-          details: req.body.details,
-          upload_documents: req.body.upload_documents,
-          legal_type: req.body.legal_type,
-          contact_name: req.body.contact_name,
-          contact_no: req.body.contact_no,
-          contact_email: req.body.contact_email,
-          user_id: req.body.user_id,
-          status: []
-        }
+
         if (file && file.filename)
           req.body.requirement_documents = file.filename;
+
+        if(sessionStorage.token){
+          decoded = jwt.verify(sessionStorage.token, process.env.SECRET_KEY)
+          req.body.userID = decoded._id;
+        }
+
+        req.body.status = [];
+
+        // const data = {
+        //   applicationName: req.body.applicationName,
+        //   userID: decoded._id,
+        //   categoryID: req.body.categoryID,
+        //   subCategoryID: req.body.subCategoryID,
+        //   licensing_location: req.body.licensing_location,
+        //   licensing_type: req.body.licensing_type,
+        //   legal_type: req.body.legal_type,
+        //   duration: req.body.duration,
+        //   service_details: req.body.service_details,
+        //   requirement_documents: file ? file.filename : null,
+        //   details: req.body.details,
+        //   upload_documents: req.body.upload_documents,
+        //   legal_type: req.body.legal_type,
+        //   contact_name: req.body.contact_name,
+        //   contact_no: req.body.contact_no,
+        //   contact_email: req.body.contact_email,
+        //   status: []
+        // }
 
         // check if application is existing then update data else create new one.
         if (req.body.id) {
@@ -81,14 +95,12 @@ router.post('/create', upload.single('file'), (req, res) => {
             })
         }
         else {
-          Application.create(data)
+          Application.create(req.body)
             .then(response => {
               if(response){
-                sessionStorage = req.session;
-                let decoded = jwt.verify(sessionStorage.token, process.env.SECRET_KEY)
                 let notificationData = {
                   applicationID: response.id,
-                  userID: decoded._id,
+                  userID: req.body.userID,
                   createdAt: new Date().toISOString()
                 }
                 ApplicationNotification.create(notificationData)

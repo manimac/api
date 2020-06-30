@@ -3,6 +3,18 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const applicationSchema = new Schema({
+  applicationName: {
+    type: String,
+  },
+  userID: {
+    type: Schema.Types.ObjectId, ref: 'users'
+  },
+  categoryID: {
+    type: Schema.Types.ObjectId, ref: 'category'
+  },
+  subCategoryID: {
+    type: Schema.Types.ObjectId, ref: 'category'
+  },
   licensing_location: {
     type: String
   },
