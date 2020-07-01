@@ -15,8 +15,8 @@ app.use(
   },{limit: '10mb', extended: true})
 )
 app.use(express.static('uploads'));
-// const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
-const mongoURI = 'mongodb+srv://venkat:Vijay9100@mycluster1-n3wil.mongodb.net/test';
+const mongoURI = 'mongodb://prozone:prozone123@ds135680.mlab.com:35680/heroku_vwsh5spj';
+// const mongoURI = 'mongodb+srv://venkat:Vijay9100@mycluster1-n3wil.mongodb.net/test';
 
 mongoose
   .connect(
