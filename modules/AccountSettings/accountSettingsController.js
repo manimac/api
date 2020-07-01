@@ -2,15 +2,18 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
+var app = express()
 const validator = require("email-validator");
 const bcrypt = require('bcrypt');
+const session = require('express-session');
 const {Validator} = require('node-input-validator');
 
-
 const User = require('./accountSettingsModel')
+app.use(session({secret: 'ssshhhhh', saveUninitialized: true, resave: true}));
 router.use(cors())
 
 process.env.SECRET_KEY = 'secret'
+let sessionStorage;
 
 router.post('/register', (req, res) => {
   const validate = new Validator(req.body, {
@@ -125,6 +128,9 @@ router.post('/login', (req, res) => {
                   let token = jwt.sign(payload, process.env.SECRET_KEY, {
                     expiresIn: 1440
                   })
+                  sessionStorage = req.session
+                  sessionStorage.token = token
+
                   res.status(200).json({ token: token })
                 }
                 else {
@@ -162,6 +168,9 @@ router.post('/login', (req, res) => {
                   let token = jwt.sign(payload, process.env.SECRET_KEY, {
                     expiresIn: 1440
                   })
+                  sessionStorage = req.session
+                  sessionStorage.token = token
+                  
                   res.status(200).json({ token: token })
                 }
                 else {
@@ -203,28 +212,35 @@ router.post('/login', (req, res) => {
 })
 
 router.get('/view', (req, res) => {
-  User.findOne({
-    _id: req.body.id
-  })
-  .then(user => {
-    if (user) {
-      res.status(200).json({ success: user})
-    } else {
-      res.send('User does not exist')
-    }
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
+  if(sessionStorage.token == req.headers.authorization){
+    var decoded = jwt.verify(req.headers.authorization, process.env.SECRET_KEY)
+    User.findOne({
+      _id: decoded._id
+      //_id: req.body.id
+    })
+    .then(user => {
+      if (user) {
+        res.status(200).json({ success: user})
+      } else {
+        res.send('User does not exist')
+      }
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
+  }
+  else{
+    res.send({ error:'Unauthorised User' });
+  }
 })
 
 router.get('/get', (req, res) => {
@@ -320,6 +336,11 @@ router.delete('/delete', (req, res) => {
       message: message
     });
   })
+})
+
+router.get('/logout',(req,res) => {
+  sessionStorage = '';
+  res.send("logout successfully")
 })
 
 module.exports = router

@@ -4,6 +4,7 @@ const cors = require('cors')
 var path = require('path')
 const multer = require('multer')
 const Events = require('./eventsModel')
+const EventNotification = require('../Notification/eventNotificationModel')
 router.use(cors())
 
 const storage = multer.diskStorage({
@@ -32,7 +33,7 @@ router.post('/create', upload.single('file'), (req, res) => {
     if(req.body.id){
       Events.updateOne({ "_id": req.body.id }, { "$set": req.body })
         .then(response => {
-          res.status(200).json({ response: response, message: "updated" })
+          res.status(200).json({ success: response })
         })
         .catch(err => {
           var message = '';
@@ -50,7 +51,28 @@ router.post('/create', upload.single('file'), (req, res) => {
     else{
       Events.create(data)
       .then(response => {
-        res.status(200).json({ success: response })
+        if(response){
+          let notificationData = {
+            eventID: response.id,
+            createdAt: new Date().toISOString()
+          }
+          EventNotification.create(notificationData)
+          .then(response1 => {
+            res.status(200).json({ success: response })
+          })
+          .catch(err => {
+            var message = '';
+            if (err.message) {
+              message = err.message;
+            }
+            else {
+              message = err;
+            }
+            return res.status(400).send({
+              message: message
+            });
+          })
+        }
       })
       .catch(err => {
         var message = '';
@@ -110,7 +132,7 @@ router.get('/view', (req, res) => {
   })
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response });
+      res.status(200).json(response);
     } else {
       res.send('Events does not exist')
     }

@@ -17,8 +17,8 @@ router.post('/create', (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
-        const data = {
-          status: req.body.role
+        let data = {
+          status: req.body.status
         }
   
         // check if role is existing then update data else create new one.
@@ -80,7 +80,7 @@ router.get('/get', (req, res) => {
   Status.find({})
   .then(response => {
     if (response) {
-      res.status(200).json({ success: response })
+      res.status(200).json(response)
     } else {
       res.send('ApplicationViews does not found')
     }
@@ -106,7 +106,7 @@ router.get('/view', (req, res) => {
     })
     .then(response => {
       if (response) {
-        res.status(200).json({ success: response })
+        res.status(200).json(response)
       } else {
         res.send('ApplicationView not exist')
       }

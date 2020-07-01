@@ -4,7 +4,7 @@ const cors = require('cors')
 const { Validator } = require('node-input-validator');
 
 const ApplicationView = require('./applicationViewModel')
-const Status = require('../Status/statusController')
+const Status = require('../Status/statusModel')
 router.use(cors())
 
 router.post('/create', (req, res) => {
@@ -20,8 +20,8 @@ router.post('/create', (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
-        const data = {
-          statusID: req.body.role,
+        let data = {
+          statusID: req.body.statusID,
           applicationID: req.body.applicationID,
           comments: req.body.comments
         }
@@ -30,7 +30,7 @@ router.post('/create', (req, res) => {
         if (req.body.id) {
           ApplicationView.updateOne({ "_id": req.body.id }, { "$set": data })
             .then(response => {
-              res.status(200).json({ success: response, message: "updated" })
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -164,7 +164,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   ApplicationView.deleteOne({
     _id: req.body.id
   })

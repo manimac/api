@@ -1,14 +1,17 @@
 const express = require('express')
 const router = express.Router()
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+const FormFields = require('./formFieldsModel')
 const { Validator } = require('node-input-validator');
-
-const Role = require('./roleSettingsModel')
 router.use(cors())
 
 router.post('/create', (req, res) => {
   const validate = new Validator(req.body, {
-    name: 'required'
+    application_name: 'required',
+    label: 'required',
+    name: 'required',
+    type: 'required'
   });
 
   try {
@@ -18,14 +21,17 @@ router.post('/create', (req, res) => {
       }
       else {
         const data = {
-          name: req.body.name
+          application_name: req.body.application_name,
+          label: req.body.label,
+          name: req.body.name,
+          type: req.body.type,
+          sequence: req.body.sequence
         }
-  
-        // check if role is existing then update data else create new one.
-        if(req.body.id){
-          Role.updateOne({ "_id": req.body.id }, { "$set": data })
+        
+        if (req.body.id) {
+          FormFields.updateOne({ "_id": req.body.id }, { "$set": req.body })
             .then(response => {
-              res.status(200).json({ success: response, message: "updated" })
+              res.status(200).json({ success: response })
             })
             .catch(err => {
               var message = '';
@@ -40,23 +46,23 @@ router.post('/create', (req, res) => {
               });
             })
         }
-        else{
-          Role.create(data)
-          .then(response => {
-            res.status(200).json({ success: response })
-          })
-          .catch(err => {
-            var message = '';
-            if (err.message) {
-              message = err.message;
-            }
-            else {
-              message = err;
-            }
-            return res.status(400).send({
-              message: message
-            });
-          })
+        else {
+          FormFields.create(data)
+            .then(response => {
+              res.status(200).json({ success: response })
+            })
+            .catch(err => {
+              var message = '';
+              if (err.message) {
+                message = err.message;
+              }
+              else {
+                message = err;
+              }
+              return res.status(400).send({
+                message: message
+              });
+            })
         }
       }
     })
@@ -76,13 +82,15 @@ router.post('/create', (req, res) => {
 
 })
 
-router.get('/get', (req, res) => {  
-  Role.find({})
+router.post('/view', (req, res) => {
+  FormFields.find({
+    _id: req.body.id
+  })
   .then(response => {
     if (response) {
-      res.status(200).json(response)
+      res.status(200).json(response);
     } else {
-      res.send('Roles does not found')
+      res.send('FormFields does not found')
     }
   })
   .catch(err => {
@@ -99,16 +107,14 @@ router.get('/get', (req, res) => {
   })
 })
 
-router.get('/view', (req, res) => {
-  try{
-    Role.findOne({
-      _id: req.body.id
-    })
+
+router.get('/get', (req, res) => {
+  FormFields.find()
     .then(response => {
       if (response) {
-        res.status(200).json(response)
+        res.status(200).json(response);
       } else {
-        res.send('Role not exist')
+        res.send('Not FormFields found')
       }
     })
     .catch(err => {
@@ -123,40 +129,28 @@ router.get('/view', (req, res) => {
         message: message
       });
     })
-  }
-  catch (err) {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  }
 })
 
+
 router.post('/delete', (req, res) => {
-  Role.deleteOne({
+  FormFields.deleteOne({
     _id: req.body.id
   })
-  .then(response => {
-    res.status(200).json({ success: response })
-  })
-  .catch(err => {
-    var message = '';
-    if (err.message) {
-      message = err.message;
-    }
-    else {
-      message = err;
-    }
-    return res.status(400).send({
-      message: message
-    });
-  })
+    .then(response => {
+      res.status(200).json({ success: response })
+    })
+    .catch(err => {
+      var message = '';
+      if (err.message) {
+        message = err.message;
+      }
+      else {
+        message = err;
+      }
+      return res.status(400).send({
+        message: message
+      });
+    })
 })
 
 module.exports = router

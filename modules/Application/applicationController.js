@@ -3,11 +3,19 @@ const router = express.Router()
 const cors = require('cors')
 const jwt = require('jsonwebtoken')
 var path = require('path')
+var app = express()
 const multer = require('multer')
+const session = require('express-session');
 const { Validator } = require('node-input-validator');
 const mongoose = require('mongoose')
+
 const Application = require('./applicationModel')
+const ApplicationNotification = require('../Notification/applicationNotificationModel')
+app.use(session({secret: 'ssshhhhh', saveUninitialized: true, resave: true}));
 router.use(cors())
+
+process.env.SECRET_KEY = 'secret'
+let sessionStorage;
 
 const storage = multer.diskStorage({
   destination: (req, file, callBack) => {
@@ -33,25 +41,39 @@ router.post('/create', upload.single('file'), (req, res) => {
         res.status(400).send(validate.errors);
       }
       else {
+        sessionStorage = req.session;
+        let decoded;
         const file = req.file;
-        const data = {
-          licensing_location: req.body.licensing_location,
-          licensing_type: req.body.licensing_type,
-          legal_type: req.body.legal_type,
-          duration: req.body.duration,
-          service_details: req.body.service_details,
-          requirement_documents: file ? file.filename : null,
-          details: req.body.details,
-          upload_documents: req.body.upload_documents,
-          legal_type: req.body.legal_type,
-          contact_name: req.body.contact_name,
-          contact_no: req.body.contact_no,
-          contact_email: req.body.contact_email,
-          user_id: req.body.user_id,
-          status: []
-        }
+
         if (file && file.filename)
           req.body.requirement_documents = file.filename;
+
+        if(sessionStorage.token){
+          decoded = jwt.verify(sessionStorage.token, process.env.SECRET_KEY)
+          req.body.userID = decoded._id;
+        }
+
+        req.body.status = [];
+
+        // const data = {
+        //   applicationName: req.body.applicationName,
+        //   userID: decoded._id,
+        //   categoryID: req.body.categoryID,
+        //   subCategoryID: req.body.subCategoryID,
+        //   licensing_location: req.body.licensing_location,
+        //   licensing_type: req.body.licensing_type,
+        //   legal_type: req.body.legal_type,
+        //   duration: req.body.duration,
+        //   service_details: req.body.service_details,
+        //   requirement_documents: file ? file.filename : null,
+        //   details: req.body.details,
+        //   upload_documents: req.body.upload_documents,
+        //   legal_type: req.body.legal_type,
+        //   contact_name: req.body.contact_name,
+        //   contact_no: req.body.contact_no,
+        //   contact_email: req.body.contact_email,
+        //   status: []
+        // }
 
         // check if application is existing then update data else create new one.
         if (req.body.id) {
@@ -73,9 +95,31 @@ router.post('/create', upload.single('file'), (req, res) => {
             })
         }
         else {
-          Application.create(data)
+          Application.create(req.body)
             .then(response => {
-              res.status(200).json({ success: response })
+              if(response){
+                let notificationData = {
+                  applicationID: response.id,
+                  userID: req.body.userID,
+                  createdAt: new Date().toISOString()
+                }
+                ApplicationNotification.create(notificationData)
+                .then(response1 => {
+                  res.status(200).json({ success: response })
+                })
+                .catch(err => {
+                  var message = '';
+                  if (err.message) {
+                    message = err.message;
+                  }
+                  else {
+                    message = err;
+                  }
+                  return res.status(400).send({
+                    message: message
+                  });
+                })
+              }
             })
             .catch(err => {
               var message = '';
@@ -230,7 +274,7 @@ router.get('/view', (req, res) => {
   }
 })
 
-router.delete('/delete', (req, res) => {
+router.post('/delete', (req, res) => {
   Application.deleteOne({
     _id: req.body.id
   })
