@@ -3,6 +3,9 @@ const Schema = mongoose.Schema
 
 // Create Schema
 const formFieldsSchema = new Schema({
+  application_name: {
+    type: String
+  },
   label: {
     type: String
   },
@@ -11,6 +14,9 @@ const formFieldsSchema = new Schema({
   },
   type: {
     type: String
+  },
+  sequence: {
+    type: Number
   }
 }
 )

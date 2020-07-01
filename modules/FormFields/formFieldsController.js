@@ -8,6 +8,7 @@ router.use(cors())
 
 router.post('/create', (req, res) => {
   const validate = new Validator(req.body, {
+    application_name: 'required',
     label: 'required',
     name: 'required',
     type: 'required'
@@ -20,9 +21,11 @@ router.post('/create', (req, res) => {
       }
       else {
         const data = {
+          application_name: req.body.application_name,
           label: req.body.label,
           name: req.body.name,
-          type: req.body.type
+          type: req.body.type,
+          sequence: req.body.sequence
         }
         
         if (req.body.id) {
