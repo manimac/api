@@ -23,8 +23,7 @@ let upload = multer({ storage: storage })
 
 router.post('/create', upload.single('file'), (req, res) => {
   const validate = new Validator(req.body, {
-    name_english: 'required',
-    color: 'required'
+    name_english: 'required'
   });
 
   try {
