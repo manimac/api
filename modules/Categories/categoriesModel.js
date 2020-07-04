@@ -29,6 +29,9 @@ const categorySchema = new Schema({
   },
   sequence: {
     type: Number
+  },
+  sub_categories: {
+    type: Array
   }
 }
 )

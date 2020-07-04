@@ -7,6 +7,7 @@ const multer = require('multer')
 const Category = require('./categoriesModel')
 const Settings = require('./settingsModel');
 const { Validator } = require('node-input-validator');
+var async = require('async');
 router.use(cors())
 
 const storage = multer.diskStorage({
@@ -99,6 +100,75 @@ router.post('/create', upload.single('file'), (req, res) => {
     });
   }
 
+})
+
+router.get('/get-categories', (req, res) => {
+  Category.find({parent_category: null}).sort({ _id: -1}).exec(function(err, categories) {
+    if (err) {
+        res.status(500).json({code: 500, message: 'Internal server error'});
+    } else {
+        async.eachSeries(categories, function (item, outerCallback) {
+          Category.find({'parent_category': item.id}).exec(function (err, subcategories) {
+                if (err) {
+                    outerCallback(err);
+                } else {
+                    var item2 = [];
+                    async.eachSeries(subcategories, function (item, innerCallback) {
+                        // count += item.comments_count + item.likes_count;
+                        item2.push(item);
+                        innerCallback();
+                    }, function () {
+                        if (err) {
+                            outerCallback(err);
+                        } else {
+                          if(item2){
+                            item.sub_categories = item2;
+                          }                          
+                            // item.totalAmount = count;
+                            outerCallback();
+                        }
+                    });
+                }
+            });
+        }, function () {
+            res.json(categories);
+        });
+    }
+});
+  // Category.find({
+  //   parent_category: null
+  // }).sort( { _id: -1 })
+  //   .exec(function(err, response) => {
+  //     if (response) {
+  //       for(var i = 0;i < response.length;i++){
+  //         Category.find({
+  //           parent_category: response[i].id
+  //         }).sort( { _id: -1 })
+  //           .then(response2 => {
+  //             if(response2 && Array.isArray(response2) && response2.length > 0){
+  //               response[i].sub_category = response2;
+  //             }
+              
+  //           });
+  //       }
+  //       console.log(response);
+  //       res.status(200).json(response);
+  //     } else {
+  //       res.send('Category not found')
+  //     }
+  //   })
+  //   .catch(err => {
+  //     var message = '';
+  //     if (err.message) {
+  //       message = err.message;
+  //     }
+  //     else {
+  //       message = err;
+  //     }
+  //     return res.status(400).send({
+  //       message: message
+  //     });
+  //   })
 })
 
 router.get('/get-category', (req, res) => {
