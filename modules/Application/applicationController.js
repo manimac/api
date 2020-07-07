@@ -53,7 +53,9 @@ router.post('/create', upload.single('file'), (req, res) => {
           req.body.userID = decoded._id;
         }
 
-        req.body.status = [];
+        req.body.modifiedAt = new Date().toISOString();
+
+        req.body.status = req.body.status ? req.body.status : [];
 
         // const data = {
         //   applicationName: req.body.applicationName,
@@ -76,8 +78,8 @@ router.post('/create', upload.single('file'), (req, res) => {
         // }
 
         // check if application is existing then update data else create new one.
-        if (req.body.id) {
-          Application.updateOne({ "_id": req.body.id }, { "$set": req.body })
+        if (req.body._id) {
+          Application.updateOne({ "_id": req.body._id }, { "$set": req.body })
             .then(response1 => {
               res.status(200).json({ success: response1, message: "updated" })
             })
@@ -222,7 +224,7 @@ router.get('/get', (req, res) => {
   Application.find({})
     .then(response => {
       if (response) {
-        res.status(200).json({ success: response })
+        res.status(200).json(response)
       } else {
         res.send('Application not found')
       }
