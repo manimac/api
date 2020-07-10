@@ -130,10 +130,12 @@ router.post('/login', (req, res) => {
                       sessionStorage = req.session
                       sessionStorage.token = token
     
-                      res.status(200).json({ token: token })
+                      res.status(200).json({ success: staff })
                     }
                     else{
-                      res.json({ error: 'Role does not exist' })
+                      return res.status(400).send({
+                        message: 'Role does not exist'
+                      });
                     }
                   })
                   .catch(err => {
@@ -150,10 +152,14 @@ router.post('/login', (req, res) => {
                   })
                 }
                 else {
-                  res.json({ error: 'Invalid Password' })
+                  return res.status(400).send({
+                    message: 'Invalid Password'
+                  });
                 }
               } else {
-                res.json({ error: 'Invalid user' })
+                return res.status(400).send({
+                  message: 'Invalid user'
+                });
               }
             })
             .catch(err => {
@@ -170,67 +176,9 @@ router.post('/login', (req, res) => {
             })
         }
         else {
-          Staff.findOne({
-            mobile: req.body.username
-          })
-            .then(staff => {
-              if (staff) {
-                if (bcrypt.compareSync(req.body.password, staff.password)) {
-                  Role.findOne({
-                    _id: req.body.role
-                  })
-                  .then(role => {
-                    if(role){
-                      const payload = {
-                        _id: staff._id,
-                        mobile: staff.mobile,
-                        email: staff.email,
-                        role: role.name
-                      }
-                      let token = jwt.sign(payload, process.env.SECRET_KEY, {
-                        expiresIn: 1440
-                      })
-                      sessionStorage = req.session
-                      sessionStorage.token = token
-    
-                      res.status(200).json({ token: token })
-                    }
-                    else{
-                      res.json({ error: 'Role does not exist' })
-                    }
-                  })
-                  .catch(err => {
-                    var message = '';
-                    if (err.message) {
-                      message = err.message;
-                    }
-                    else {
-                      message = err;
-                    }
-                    return res.status(400).send({
-                      message: message
-                    });
-                  })
-                }
-                else {
-                  res.json({ error: 'InCorrect Password' })
-                }
-              } else {
-                res.json({ error: 'Invalid user' })
-              }
-            })
-            .catch(err => {
-              var message = '';
-              if (err.message) {
-                message = err.message;
-              }
-              else {
-                message = err;
-              }
-              return res.status(400).send({
-                message: message
-              });
-            })
+          return res.status(400).send({
+            message: 'Invalid Credentials'
+          });
         }
       }
     })  
@@ -277,7 +225,9 @@ router.get('/view', (req, res) => {
     })
   }
   else{
-    res.send({ error:'Unauthorised Staff' });
+    return res.status(400).send({
+      message: 'Unauthorised Staff'
+    });
   }
 })
 
