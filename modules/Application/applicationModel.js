@@ -50,6 +50,9 @@ const applicationSchema = new Schema({
   },
   status:{
     type: Array
+  },
+  modifiedAt:{
+    type: String
   }
 })
 
